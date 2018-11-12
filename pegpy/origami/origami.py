@@ -122,7 +122,7 @@ class SourceSection(object):
             if e.code is not None:
                 self.pushFMT(e.code, e.data)
             else:
-                keys = e.keys()
+                keys = map(lambda k: k if not k.startswith('#') else k[1:], e.keys())
                 for key in keys:
                     if key in env:
                         d = env[key]
@@ -211,7 +211,7 @@ def transpile(t, origami_files = ['common.origami']):
     else:
         for file in origami_files:
             env.load(file)
-    
+
     e = SExpr.of(t)
     # TODO typecheck is HERE
     ss = SourceSection()

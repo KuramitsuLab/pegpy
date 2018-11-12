@@ -36,6 +36,7 @@ class SExpr(object):
         'CharExpr': lambda t: t.asString(),
         'TrueExpr': lambda t: 'true',
         'FalseExpr': lambda t: 'false',
+        'OperatorExpr': lambda t: t.asString(),
     }
 
     @classmethod
@@ -338,4 +339,3 @@ class SyntaxMapper(object):
                 #print('@', key, value)
                 self.addSyntax(key, value)
         f.close()
-
