@@ -206,8 +206,12 @@ class SourceSection(object):
 
 def transpile(t, origami_files = ['common.origami']):
     env = Env()
-    for file in origami_files:
-        env.load(file)
+    if len(origami_files) == 0:
+        env.load('common.origami')
+    else:
+        for file in origami_files:
+            env.load(file)
+    
     e = SExpr.of(t)
     # TODO typecheck is HERE
     ss = SourceSection()

@@ -10,13 +10,14 @@ def bold(s):
     return '\033[1m' + str(s) + '\033[0m'
 
 def read_inputs(a):
-    try:
-        f = open(a, 'rb')
+    path = Path(a)
+    if path.exists():
+        f = path.open()
         data = f.read()
         f.close()
         return data
-    except:
-        return a.encode()
+    else:
+        return a
 
 def readlines(prompt):
     s = input(prompt)
@@ -37,7 +38,7 @@ def load_grammar(opt, default = None):
     if file is None:
         raise CommandError(opt)
     g = Grammar(file)
-    g.load(u.find_path(file))
+    g.load(file)
     return g
 
 def switch_generator(opt, default = 'math.tpeg'):
@@ -107,10 +108,10 @@ def parse_opt(argv):
     def parse_each(a, d):
         if a[0].startswith('-'):
             if len(a) > 1:
-                if a[0] == '-g':
+                if a[0] == '-g' or a[0] == '--grammar':
                     d['grammar'] = a[1]
                     return a[2:]
-                elif a[0] == '-s':
+                elif a[0] == '-s' or a[0] == '--start':
                     d['start'] = a[1]
                     return a[2:]
                 elif a[0] == '-X':
