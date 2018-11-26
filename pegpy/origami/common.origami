@@ -27,6 +27,7 @@ require common.origami
 +@2              = (${1}+${2})
 -@2              = (${1}-${2})
 *@2              = (${1}*${2})
+#MulExpr         = (${1}*${2})
 /@2              = (${1}/${2})
 %@2              = (${1}%${2})
 ||@2             = (${1}||${2})
@@ -50,6 +51,7 @@ require common.origami
 
 true             = True
 false            = False
+null             = None
 
 TODO
 #StringExpr      = \"${s}\"
