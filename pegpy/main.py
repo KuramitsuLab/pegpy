@@ -143,6 +143,10 @@ def arare(opt, out):
     from pegpy.origami.arare import TypeSystem
     origami(opt,out,'arare.tpeg',TypeSystem)
 
+def nico(opt, out):
+    from pegpy.origami.nico import TypeSystem
+    origami(opt,out,'nico3.tpeg',TypeSystem)
+
 def nezcc(opt, out):
     pass
 

@@ -1,0 +1,106 @@
+#Source = pragma solidity ^0.4.24;${NL}${import}${NL}contract ${title} {${+NL}${user}${variable}${NL}${NL}${function}${-NL}}
+#Block = "${*}" "${NL}${NL}"
+
+#BlockComment = /* ${1} */
+#LineComment = // ${1}${NL}
+
+#Import = "${NL}${*}${NL}" "${NL}"
+#ImportDecl = import '${path}';
+#PATH = ${1}
+#Title = ${1}
+#TypeDecls = "${*}${NL}" "${NL}"
+#NoImport = library SafeMath {${+NL}function mul(int256 a, int256 b) internal pure returns (int256) {${+NL}if (a == 0) {${+NL}return 0;${-NL}}${NL}int256 c = a * b;${NL}require(c / a == b, 'Mul Err');${NL}return c;${-NL}}${NL}function div(int256 a, int256 b) internal pure returns (int256) {${+NL}require(b > 0, 'Div Err');${NL}int256 c = a / b;${NL}return c;${-NL}}${NL}function sub(int256 a, int256 b) internal pure returns (int256) {${+NL}require(b <= a, 'Sub Err');${NL}int256 c = a - b;${NL}return c;${-NL}}${NL}function add(int256 a, int256 b) internal pure returns (int256) {${+NL}int256 c = a + b;${NL}require(c >= a, 'Add Err');${NL}return c;${-NL}}${NL}function mod(int256 a, int256 b) internal pure returns (int256) {${+NL}require(b != 0, 'Mod Err');${NL}return a % b;${-NL}}${NL}function exp(int256 a, int256 b) internal pure returns(int256){${+NL}require(b >= 0, 'Exp Err');${NL}int256 c = 1;${NL}for(int256 i = 0 ; i < b ; i++){${+NL}c = mul(c, a);${-NL}}${NL}return c;${-NL}}${NL}function umul(uint256 a, uint256 b) internal pure returns (uint256) {${+NL}if (a == 0) {${+NL}return 0;${-NL}}${NL}uint256 c = a * b;${NL}require(c / a == b, 'Mul Err');${NL}return c;${-NL}}${NL}function udiv(uint256 a, uint256 b) internal pure returns (uint256) {${+NL}require(b > 0, 'Div Err');${NL}uint256 c = a / b;${NL}return c;${-NL}}${NL}function usub(uint256 a, uint256 b) internal pure returns (uint256) {${+NL}require(b <= a, 'Sub Err');${NL}uint256 c = a - b;${NL}return c;${-NL}}${NL}function uadd(uint256 a, uint256 b) internal pure returns (uint256) {${+NL}uint256 c = a + b;${NL}require(c >= a, 'Add Err');${NL}return c;${-NL}}${NL}function umod(uint256 a, uint256 b) internal pure returns (uint256) {${+NL}require(b != 0, 'Mod Err');${NL}return a % b;${-NL}}${NL}function uexp(uint256 a, uint256 b) internal pure returns(uint256){${+NL}require(b >= 0, 'Exp Err');${NL}uint256 c = 1;${NL}for(uint256 i = 0 ; i < b ; i++){${+NL}c = umul(c, a);${-NL}}${NL}return c;${-NL}}${-NL}}
+
+#VariableDecl = "${*}" "${NL}"
+#VPair = ${type(sname)} internal ${sname};
+#ImportPair = ${fname} ${sname} = ${fname}(${address});
+
+#FunctionDecl = ${nconst}${name}(${param}) public ${view}${returns}{${+NL}${body}${-NL}}
+#FunctionName@1 = ${fname}
+#FunctionName@2 = ${sname}
+#FDParam = "${*}" ", "
+#FDPair = ${type(sname)} ${memory}${sname}
+#FDBody = "${*}" "${NL}"
+
+#EventDecl = event ${name}(${param});
+
+#NotConstructor = "function "
+#ReturnType = "returns(${1}) "
+#ViewType = "view "
+#MemoryType = "memory "
+
+#Assign = ${left} = ${right};
+#Return = return (${1});
+#Require = require(${1});
+#DecFunc@2:(int256,int256)->Void = ${1} = SafeMath.sub(${1}, ${2});
+#DecFunc@2:(uint256,uint256)->Void = ${1} = SafeMath.usub(${1}, ${2});
+#IncFunc@2:(int256,int256)->Void = ${1} = SafeMath.add(${1}, ${2});
+#IncFunc@2:(uint256,uint256)->Void = ${1} = SafeMath.uadd(${1}, ${2});
+#CompleteStatement = return true;
+#RecordStatement = emit ${name}(${param});
+#RecordParams = "${*}" ", "
+#Text = ${1}
+
+#StructDefine = "struct ${1} {${2:};}" ";"
+#EnumDefine = enum ${name} {${data}}
+#EnumElement = "${*}" ", "
+#AssumeDecl = ${type} ${name}
+
+#Map1 = ${right}[${left}]
+#Map2 = ${name}[${index1}][${index2}]
+#Pair = ${type(sname)} ${sname}
+// #Pair = ${type(vname)} ${vname} ${@blockcomment(cname)}
+
+#Raw = ${byte(1)}
+#You = msg.sender
+
+かつ@2        = ${1} && ${2}
+または@2      = ${1} || ${2}
+"==@2"       = ${1} == ${2}
+＝＝@2        = ${1} == ${2}
+"NOT=@2"     = ${1} != ${2}
+NOT＝@2       = ${1} != ${2}
+">=@2"       = ${1} >= ${2}
+＞＝@2        = ${1} >= ${2}
+"<=@2"       = ${1} <= ${2}
+＜＝@2        = ${1} <= ${2}
+<@2          = ${1} < ${2}
+＜@2          = ${1} < ${2}
+>@2          = ${1} > ${2}
+＞@2          = ${1} > ${2}
++@2:(int256,int256)->int256             = SafeMath.add(${1}, ${2})
+＋@2:(int256,int256)->int256            = SafeMath.add(${1}, ${2})
+-@2:(int256,int256)->int256             = SafeMath.sub(${1}, ${2})
+ー@2:(int256,int256)->int256            = SafeMath.sub(${1}, ${2})
+*@2:(int256,int256)->int256             = SafeMath.mul(${1}, ${2})
+＊@2:(int256,int256)->int256            = SafeMath.mul(${1}, ${2})
+/@2:(int256,int256)->int256             = SafeMath.div(${1}, ${2})
+／@2:(int256,int256)->int256            = SafeMath.div(${1}, ${2})
+**@2:(int256,int256)->int256            = SafeMath.exp(${1}, ${2})
+＊＊@2:(int256,int256)->int256           = SafeMath.exp(${1}, ${2})
+^@2:(int256,int256)->int256             = SafeMath.exp(${1}, ${2})
+%@2:(int256,int256)->int256             = SafeMath.mod(${1}, ${2})
+％@2:(int256,int256)->int256             = SafeMath.mod(${1}, ${2})
++@2:(uint256,uint256)->uint256          = SafeMath.uadd(${1}, ${2})
+＋@2:(uint256,uint256)->uint256          = SafeMath.uadd(${1}, ${2})
+-@2:(uint256,uint256)->uint256          = SafeMath.usub(${1}, ${2})
+ー@2:(uint256,uint256)->uint256          = SafeMath.usub(${1}, ${2})
+*@2:(uint256,uint256)->uint256          = SafeMath.umul(${1}, ${2})
+＊@2:(uint256,uint256)->uint256          = SafeMath.umul(${1}, ${2})
+/@2:(uint256,uint256)->uint256          = SafeMath.udiv(${1}, ${2})
+／@2:(uint256,uint256)->uint256          = SafeMath.udiv(${1}, ${2})
+**@2:(uint256,uint256)->uint256         = SafeMath.uexp(${1}, ${2})
+＊＊@2:(uint256,uint256)->uint256        = SafeMath.uexp(${1}, ${2})
+^@2:(uint256,uint256)->uint256          = SafeMath.uexp(${1}, ${2})
+%@2:(uint256,uint256)->uint256          = SafeMath.umod(${1}, ${2})
+％@2:(uint256,uint256)->uint256          = SafeMath.umod(${1}, ${2})
+
+int256@1:uint256 -> int256 = int256(${1})
+uint256@1:int256 -> uint256 = uint256(${1})
+
+#MapType@2 = mapping(${1}=>${2})
+#MapType@3 = mapping(${1}=>mapping(${2}=>${3}))
+#ArrayType = ${1}${2}
+#ArrayNest = []
+#EnumType = ${name}
+#PrimitiveType = ${1}

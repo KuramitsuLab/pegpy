@@ -94,7 +94,7 @@ class Env(object):
                 delim = u.unquote_string(stmt['delim'].asString()) if 'delim' in stmt else None
                 d = Def(ty, libs, code, delim)
                 if ty is not None and ty.isFuncType():
-                    keys = Expression.makekeys(name, len(ty), ty[1])
+                    keys = Expression.makekeys(name, psize if psize is not None else len(ty), ty[1])
                 else:
                     keys = Expression.makekeys(name, psize, None)
                 self.add(keys, d)
@@ -379,6 +379,7 @@ class Origami(object):
 
     def Infix(self, env, expr, ty):
         binary = Expression.new(expr[2], expr[1], expr[3])
+        binary.context = expr.context
         binary = self.apply(env, binary, ty)
         if binary.isUncode():
             expr.ty = binary.ty
@@ -420,7 +421,7 @@ class Origami(object):
                 funcTy = defined.ty
                 #print('@ret', defined.ty, defined.ty[-1])
                 for n in range(1, len(expr)):
-                    self.typeAt(env, expr, n, funcTy[n-1])
+                    self.typeAt(env, expr, n, funcTy[n])
                 expr.setType(funcTy[-1])
             if not expr.isUntyped() and not expr.isUncode():
                 break

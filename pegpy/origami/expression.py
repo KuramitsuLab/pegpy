@@ -31,8 +31,8 @@ class Expression(object):
 
     __slots__ = ['tag', 'data', 'pos3', 'context', 'ty', 'code']
 
-    def __init__(self, tag, data, pos3 = None, ty = None):
-        self.context = None
+    def __init__(self, tag, data, pos3 = None, ty = None, context = None):
+        self.context = context
         self.tag = Expression.intern(tag)
         self.data = data
         self.pos3 = pos3
@@ -210,10 +210,10 @@ class Expression(object):
         return Expression(tag, cons)
 
     @classmethod
-    def new2(cls, tag, value):
+    def new2(cls, tag, value, context = None):
         if isinstance(tag, Expression):
-            return Expression(str(tag), value, tag.getpos())
-        return Expression(tag, value)
+            return Expression(str(tag), value, tag.getpos(), context = context)
+        return Expression(tag, value, context = context)
 
     @classmethod
     def valueOf(cls, v):

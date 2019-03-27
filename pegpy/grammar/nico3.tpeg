@@ -1,0 +1,457 @@
+Source = __ {
+    title: Title
+    import: Import
+    variable: VariableDecl
+    function: {(FunctionDecl)* #Block}
+    #Source
+} EOF
+
+_            = ( [ 　\t] / BLOCKCOMMENT / LINECOMMENT )*
+__           = ( [ 　\t\n\r] / BLOCKCOMMENT / LINECOMMENT )*
+BLOCKCOMMENT = '/*' ( !'*/' . )* '*/'
+             / '(*' ( !'*)' . )* '*)'
+LINECOMMENT  = '//' ( !EOL . )* EOL
+EOF          = !.
+EOL          = ('\r'? '\n') / EOF
+SPLITWORD    = '＊付録＊' __
+
+S = ([ 　\t])*
+TAB = ('    ' ' '*) / ('\t'+) / ('　　　　' '　'*)
+NL = (_ EOL)+
+NL_ = NL _
+
+"・" = [・,、，]
+"'" = ["“”'’]
+"," = [,、，]
+"(" = [(（]
+")" = [)）]
+"{" = [{【]
+"}" = [}】]
+"[" = [\[［「『｛]
+"]" = [\]］」』｝]
+"<" = [<＜]
+">" = [>＞]
+"+" = [+＋]
+"-" = [\-ー]
+"*" = [*＊]
+"/" = [/／]
+"^" = [^＾]
+"**" = ('**' / '＊＊' / "^" )
+"%" = [%％]
+"=" = [=＝]
+"==" = ('==' / '＝＝')
+"@" = [@＠]
+":" = [:：]
+">=" = ('>=' / '＞＝')
+"<=" = ('<=' / '＜＝')
+"NOT=" = ('NOT=' / 'NOT＝')
+"#" = [#＃]
+"->" = ('->' / 'ー＞' / '→')
+
+C = [ぁ-んァ-ヶ㐀-䶵一-龠々〇〻ー◯×〜ａ-ｚＡ-Ｚ０-９a-zA-Z0-9]
+
+/*-------------------------Title-------------------------*/
+Title = '「' {JapaneseName #Title} '」' __
+
+/*-------------------------ImportDecl-------------------------*/
+Import = {('次の契約を用いる' ":" NL
+    @scope(
+        ImportDecl1
+        (ImportDecl2)*
+    ) __
+)? #Import}
+
+ImportDecl1 = {
+    @symbol(TAB) name: ContractName
+    @match(TAB) path: ContractPath
+    @match(TAB) address: ContractAddress
+    #ImportDecl
+}
+
+ImportDecl2 = {
+    @match(TAB) name: ContractName
+    @match(TAB) path: ContractPath
+    @match(TAB) address: ContractAddress
+    #ImportDecl
+}
+
+ContractName = {
+    '契約名' S ":" S fname: Title
+    sname: DefDict
+    #IPair
+} NL
+
+ContractPath = 'ファイルの場所' S ":" S "'" {(!"'" .)* #PATH} "'" NL
+
+ContractAddress = 'ブロックチェーン上でのアドレス' S ":" S Address NL
+
+/*-------------------------VariableDecl-------------------------*/
+VariableDecl = FIRSTARTICLE S C+ NL (VarDecl / NoneDecl) __
+
+FIRSTARTICLE = '第0条' / '第０条'
+
+VarDecl = {
+    @scope(
+        @symbol(TAB) VPairDecl NL
+        (@match(TAB) VPairDecl NL)*
+    )
+    #VariableDecl
+}
+
+VPairDecl = {
+    fname: JapaneseName
+    sname: DefDict
+    #VPair
+}
+
+NoneDecl = {
+    TAB 'なし'
+    #NoneDecl
+}
+
+/*-------------------------FunctionDecl-------------------------*/
+FunctionDecl = ARTICLE S (SolidityDecl / AssumeDecls / FuncDecl) __
+
+ARTICLE = '第'? DIGIT '条' ('第'? DIGIT '項')?
+
+SolidityDecl = {
+    'Solidity' NL
+    @scope(
+        (@symbol(TAB) SolLine)
+        (@match(TAB) SolLine)
+    )
+    #SolBlock
+}
+
+SolLine = {(!EOL .)* #SolLine} EOL
+
+AssumeDecls = {
+    '型録' NL_
+    (AssumeDecl NL_)+
+    AssumeDecl?
+    #AssumeDecls
+}
+
+AssumeDecl = {
+    "["
+    name: Identifier
+    "]" 'を'
+    type: Type
+    '型とする'
+    #AssumeDecl
+}
+
+FuncDecl = {
+    name: FuncDeclName
+    NL
+    @scope(body: {
+        @symbol(TAB) (FuncDeclParam / Statement) NL
+        (@match(TAB) (FuncDeclParam / Statement) NL)*
+        #FunctionBody
+    })
+    #FunctionDecl
+}
+
+FuncDeclName = {
+    fname: JapaneseName ("(" S sname: EnglishName S ")")?
+    #FunctionName
+}
+
+FuncDeclParam = {
+    ({ 'ETH' #ETH } / FDPairDecl)
+    #FunctionParam
+}
+
+FDPairDecl = {
+    (fname: {(!'指定された' C)+ #Raw})?
+    '指定された' C+
+    sname: DefDict
+    #FDPair
+}
+
+/*-------------------------Statement-------------------------*/
+Statement =
+    / IfStatement
+    / RequireStatement
+    / ReturnStatement
+    / RecordStatement
+    / CompleteStatement
+    / EventStatement
+    / Assign
+    / InnerFunction
+    / LocalVariableDecl
+    / Solidity
+
+IfStatement = {
+    'もし' S Condition S 'ならば' NL
+    @scope(
+        @symbol(TAB) Then
+        (@match(TAB) ElseIf)*
+        (@match(TAB) Else)?
+    )
+    #If
+}
+
+Condition = {LogicalExpr #Cond}
+
+Then = {(Statement NL)+ #Then}
+
+ElseIf = {
+    'ではなく、もし' S Condition S 'ならば' NL
+    Then
+    #ElIf
+}
+
+Else = {
+    'でなければ' S (Statement NL)+
+    #Else
+}
+
+RequireStatement = {
+    '要件' S Expression
+    #Require
+}
+
+ReturnStatement = {
+    (PostfixExpr S ("・" S PostfixExpr S)* 'を出力として得る')
+    / ('当事者は' PostfixExpr S ("・" S PostfixExpr S)* 'を知る')
+    #Return
+}
+
+RecordStatement = {
+    param: {(Identifier / You) ("," (Identifier / You))* #RecordParams}
+    'に対し'
+    title: {(!'を行う' C)+ #Raw}
+    'を行う'
+    #RecordStatement
+}
+
+CompleteStatement = {
+    title: {(!'を完了' C)+ #Raw}
+    'を完了'
+    #CompleteStatement
+}
+
+EventStatement = {
+    '以上を'
+    title: {(!'として台帳に記録する' C)+ #Raw}
+    'として台帳に記録する'
+    #EventStatement
+}
+
+Assign = {
+    left: AssignLeft [はを] right: AssignRight 'とする' #Assign
+}
+
+AssignLeft =
+    / Tuple
+    / PostfixExpr
+
+AssignRight =
+    / Tuple
+    / Expression
+
+Tuple = {"(" S PrimaryExpr S ("," S PrimaryExpr)+ S ")" S #Tuple}
+
+InnerFunction =
+    / {'本契約のアドレスが持つETHから、' PostfixExpr 'を' PostfixExpr 'へ送金する' #EthTransfer}
+    / {PostfixExpr 'を' PostfixExpr 'だけ増やす' #IncFunc}
+    / {PostfixExpr 'を' PostfixExpr 'だけ減らす' #DecFunc}
+    / {PostfixExpr 'に' PostfixExpr 'を追加する' #PushFunc}
+    / {PostfixExpr 'が存在する' #AddrExistFunc}
+
+LocalVariableDecl = {(Expression 'として')?
+    (PairDecl / Identifier)
+    'を定義する'
+    #LVDecl
+}
+
+PairDecl = {
+    fname: JapaneseName
+    sname: DefDict
+    #Pair
+}
+
+/*-------------------------Expression-------------------------*/
+Expression =
+    / FunctionExpression
+    / Solidity
+    / LogicalExpr
+
+FunctionExpression = {
+    '契約' {(!'より' C)* #Raw} 'より、' __
+    (FuncExprParam S ("・" S FuncExprParam S)* 'をパラメータとして' __)?
+    FuncExprName ('を行う' / 'を行った結果')
+    #FExpr
+}
+
+FuncExprParam = {PostfixExpr #FEParam}
+
+FuncExprName = {
+    (!'を行う' !'を行った結果' C)+
+    #Raw
+}
+
+Solidity = 'SOL' S "{" S SolInner "}"
+SolInner = {(!'}' .)* #Sol}
+
+LogicalExpr =
+    EqualityExpr (left:^ { S name: {LOGICAL #NameExpr} S right: EqualityExpr #Infix })*
+
+LOGICAL = 'かつ' / 'または'
+
+EqualityExpr =
+    RelationalExpr (left:^ { S name: {EQ #NameExpr} S right: RelationalExpr #Infix })*
+
+EQ = "==" / "NOT="
+
+RelationalExpr =
+    AddSubExpr (left:^ { S name: {CMPR #NameExpr} S right: AddSubExpr #Infix })*
+
+CMPR =
+    / ">="
+    / "<="
+    / ">"
+    / "<"
+
+AddSubExpr =
+    MulDivExpr (left:^ { S name: {ADDSUB #NameExpr} S right: MulDivExpr #Infix })*
+
+ADDSUB = "+" / "-"
+
+MulDivExpr =
+    PowerExpr (left:^ { S name: {MULDIV #NameExpr} S right: PowerExpr #Infix })*
+
+MULDIV = "*" / "/" / "%"
+
+PowerExpr =
+    GroupExpr (left:^ { S name: {POWER #NameExpr} S right: GroupExpr #Infix })*
+
+POWER = "**"
+
+GroupExpr = ({"(" S LogicalExpr S ")"}) / ReservedExpr
+
+/*-------------------------PostfixExpr-------------------------*/
+ReservedExpr = PostfixExpr (^ {'の長さ' #Length})?
+
+PostfixExpr = Element (index1:^ {'から' index2: Element 'が' name: Element #Map2})?
+
+Element = Component (left:^ {'の' right: Component #Map1})?
+
+Component =
+    / ArrayRef
+    / PrimaryExpr
+
+ArrayRef = {
+    PrimaryExpr ('の' Index '番目')+
+    #IndexExpr
+}
+
+Index = {(Num / Identifier) #Index}
+
+PrimaryExpr =
+    / Address
+    / Num
+    / Boolean
+    / String
+    / Identifier
+    / You
+
+Num = {DIGIT #IntExpr}
+
+DIGIT =
+    / [1-9] [0-9]*
+    / ([0] ![0-9])
+
+Address = { '0x'
+    [0-9] [0-9] [0-9] [0-9] [0-9] [0-9] [0-9] [0-9] [0-9] [0-9]
+    [0-9] [0-9] [0-9] [0-9] [0-9] [0-9] [0-9] [0-9] [0-9] [0-9]
+    [0-9] [0-9] [0-9] [0-9] [0-9] [0-9] [0-9] [0-9] [0-9] [0-9]
+    [0-9] [0-9] [0-9] [0-9] [0-9] [0-9] [0-9] [0-9] [0-9] [0-9]
+    #Addr}
+    / {'0x0' ![0-9] #Addr}
+
+Boolean = { ('はい') / ([tT] 'rue') #TrueExpr} / { ('いいえ') / ([fF] 'alse') #FalseExpr}
+
+String =
+    / {'「' (!'」' C)+ '」' #StringExpr}
+    / {'"' (!'"' C)+ '"' #StringExpr}
+
+JapaneseName = {
+    C+ #Raw
+} S
+
+EnglishName = {
+    [a-zA-Z_\x80-\xF7] [a-zA-Z0-9\x80-\xF7]*
+    #EnglishName
+}
+
+DefDict = "(" S '以下、' {
+    @defdict((!'と呼ぶ' C)*) #Raw
+} 'と呼ぶ' S ")"
+
+Identifier = {
+    @dict(C+)
+    #Raw
+}
+
+You = {
+    'あなた' / '当事者'
+    #You
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+UserDefinition = {("#" S 'ユーザ定義' __ (StructDefine __)*)? #Block}
+
+StructDefine = {
+    StructName 'は' NL_
+    (Dictionary __)+
+    'からなる'
+    #StructDefine
+}
+
+StructName = {(!('は') C)+ #Raw}
+
+WordDefinition = {("#" S '辞書' __ (Dictionary __)*)? #WordDefine}
+
+Dictionary = {
+    name: JapaneseName ":" S type: Type
+    #AssumeDecl
+}
+
+Type = MapType / MapRetType / EnumType
+
+MapType = {
+    PrimitiveType (S "," S PrimitiveType)* S "->" S MapRetType
+    #MapType
+}
+
+PrimitiveType = {('int' / 'bool' / 'address' / 'string' / 'uint') #PrimitiveType}
+
+MapRetType =
+    / ArrayType
+    / PrimitiveType
+    / StructType
+
+ArrayType = {(PrimitiveType / StructType) ArrayNest #ArrayType}
+
+ArrayNest = {'のリスト' ArrayNest? #ArrayNest}
+
+EnumType = {
+    "{" __ JapaneseName ("/" S JapaneseName)* __ "}"
+    #EnumType
+}
+
+StructType = {(!'のリスト' C)+ #Raw}
